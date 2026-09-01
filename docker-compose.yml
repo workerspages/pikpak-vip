@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  pikpak-inviter:
+    image: ghcr.io/workerspages/pikpak-inviter:latest
+    container_name: pikpak-inviter
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    volumes:
+      # 前面是 NAS 本地的路径，后面是容器内的路径。
+      # 如果 emails.txt 和 docker-compose.yml 在同一个目录下，可以使用 ./emails.txt
+      - ./emails.txt:/app/emails.txt
+    environment:
+      - TZ=Asia/Shanghai  # 确保日志和程序运行的时区是中国标准时间
