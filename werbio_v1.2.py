@@ -6,7 +6,7 @@ import re
 import time
 import requests
 import email
-import threading # 引入线程锁
+import threading 
 
 from concurrent.futures import ThreadPoolExecutor
 from pywebio.input import input_group, input, TEXT
@@ -14,9 +14,9 @@ from pywebio.output import put_text, put_markdown, clear, put_html
 from pywebio import start_server
 from datetime import datetime
 
-# -------------改这里-------------
-# 替换为自己txt文件所在地址
-file_path = r'C:\Users\admin\小米云盘\桌面\邮箱.txt'
+# -------------核心修改点-------------
+# 已经为你修改为相对路径。通过 Docker 运行时，只需使用 -v 参数挂载 emails.txt 到 /app/emails.txt 即可
+file_path = 'emails.txt'
 
 # 定义卡密和其使用次数
 card_keys = {
@@ -207,7 +207,7 @@ def get_sign(xid, t):
         md5_hash = md5(md5_hash)
     return md5_hash
 
-# 为了节省篇幅，所有网络请求我加上了默认返回值 {}，防止后续引发异常
+# 增加默认返回值 {} 兜底，防止出现 NoneType 导致应用崩溃
 def init(xid, mail):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/shield/captcha/init'
@@ -388,14 +388,13 @@ def main(incode, num_invitations=1):
                 end_time = time.time()
                 run_time = f'{(end_time - start_time):.2f}'
 
-                # 【核心修复点】对 activation 增加合法性以及 NoneType 的校验
+                # 增加 isinstance 判断，彻底解决 add_days 报错问题
                 if isinstance(activation, dict) and activation.get('add_days') == 5:
                     result = f"邀请成功 邀请码: {incode} email: {mail} 密码：qwe103"
                     print(result)
                     success_count += 1
                     invitation_records[incode].append(time.time())
                     update_file_status(file_path, email_user, email_pass, "登录成功")
-                    # wxpusher(mail, "qwe103", incode) # 推送通知可选
                     return f"邀请成功: {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: qwe103"
                 elif isinstance(activation, dict) and activation.get('add_days') == 0:
                     result = f'邀请码: {incode} 邀请失败, 重试...'
